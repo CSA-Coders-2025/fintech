@@ -204,7 +204,14 @@ class GameLevelAirport {
             "J.P. Morgan",
             "The stock market is a place of opportunity and risk. You can buy shares in companies and watch your investments grow—or shrink.\nWould you like to proceed to the Stock Exchange and begin your investment journey?",
             [
-              { label: "Take me to the Stock Exchange", action: () => openInModal(`${pagesURI}/stocks/viewer`) },
+              { label: "Take me to the Stock Exchange", action: () => {
+                // Give NPC cookie for going to the Stock Exchange
+                if (gameEnv.game && gameEnv.game.giveNpcCookie) {
+                  gameEnv.game.updateNpcProgress(gameEnv.game.id, sprite_data_stocks.id);
+                  gameEnv.game.giveNpcCookie(sprite_data_stocks.id, "stock_exchange_visited", "Welcome to the world of investing! Start your journey in the Stock Exchange.");
+                }
+                openInModal(`${pagesURI}/stocks/viewer`);
+              }},
               { label: "Remind me what stocks are", action: () => dialogFunctions.whatAreStocks(), keepOpen: true },
               { label: "Back", action: () => dialogFunctions.intro(), keepOpen: true }
             ]
@@ -217,7 +224,14 @@ class GameLevelAirport {
             "J.P. Morgan",
             fact + "\nWould you like to try investing now?",
             [
-              { label: "Yes, let's invest", action: () => openInModal(`${pagesURI}/stocks/viewer`) },
+              { label: "Yes, let's invest", action: () => {
+                // Give NPC cookie for going to invest
+                if (gameEnv.game && gameEnv.game.giveNpcCookie) {
+                  gameEnv.game.updateNpcProgress(gameEnv.game.id, sprite_data_stocks.id);
+                  gameEnv.game.giveNpcCookie(sprite_data_stocks.id, "stock_exchange_visited", "Welcome to the world of investing! Start your journey in the Stock Exchange.");
+                }
+                openInModal(`${pagesURI}/stocks/viewer`);
+              }},
               { label: "Back", action: () => dialogFunctions.explainStocks(), keepOpen: true }
             ]
           );
