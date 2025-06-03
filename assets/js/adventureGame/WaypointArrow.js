@@ -4,14 +4,12 @@ export default class WaypointArrow {
     this.gamePath = gamePath;
     // Start at J.P. Morgan and follow the correct order as seen in GameLevelAirport.js
     this.waypointIds = [
-      'Stock-NPC',        // J.P. Morgan (fixed the space issue)
-      'Casino-NPC',        // Frank Sinatra
-      'Fidelity',          // Fidelity
-      'Schwab',            // Schwab
-      'Mining-NPC',        // Mining Man
-      'Crypto-NPC',        // Satoshi Nakamoto
-      'Bank-NPC',          // Janet Yellen
-      'Market Computer'    // Computer
+      'Stock-NPC',        // J.P. Morgan
+      'Casino-NPC',       // Frank Sinatra
+      'Mining-NPC',       // Mining Man
+      'Crypto-NPC',       // Satoshi Nakamoto
+      'Bank-NPC',         // Janet Yellen
+      'Market Computer'   // Computer
     ];
     // Start at the first step (J.P. Morgan)
     this.currentStep = this.loadStep();
@@ -57,7 +55,7 @@ export default class WaypointArrow {
     arrowImg.src = this.gamePath + "/images/gamify/redarrow2.png";
     arrowImg.id = 'waypointArrow';
     arrowImg.style.position = 'absolute';
-    arrowImg.style.zIndex = 2000;
+    arrowImg.style.zIndex = 999;
     arrowImg.style.width = '48px';
     arrowImg.style.height = '48px';
     arrowImg.style.pointerEvents = 'none';
@@ -134,8 +132,6 @@ export default class WaypointArrow {
     const offsets = {
       'Stock-NPC':        { dx: 0, dy: -100 },    // J.P. Morgan - centered
       'Casino-NPC':       { dx: 0, dy: -80 },     // Frank Sinatra
-      'Fidelity':         { dx: 0, dy: -120 },    // Fidelity - taller sprite
-      'Schwab':           { dx: 0, dy: -120 },    // Schwab - taller sprite
       'Mining-NPC':       { dx: 0, dy: -80 },     // Mining Man
       'Crypto-NPC':       { dx: 0, dy: -80 },     // Satoshi Nakamoto
       'Bank-NPC':         { dx: 0, dy: -80 },     // Janet Yellen
@@ -145,8 +141,6 @@ export default class WaypointArrow {
     const positions = {
       'Stock-NPC':        { x: width * 0.2, y: height * 0.95 },
       'Casino-NPC':       { x: width * 0.19, y: height * 0.39 },
-      'Fidelity':         { x: width * 0.37, y: height * 0.32 },
-      'Schwab':           { x: width * 0.53, y: height * 0.32 },
       'Mining-NPC':       { x: width * 0.655, y: height * 0.39 },
       'Crypto-NPC':       { x: width * 0.765, y: height * 0.39 },
       'Bank-NPC':         { x: width * 0.745, y: height * 0.88 },
