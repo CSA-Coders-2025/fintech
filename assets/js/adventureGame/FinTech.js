@@ -386,6 +386,21 @@ class StatsManager {
         const totalAvailable = availableNpcs.length;
         const progressPercentage = totalAvailable > 0 ? (npcCookiesCount / totalAvailable) * 100 : 0;
 
+        // Calculate portfolio values safely
+        let stockValue = '0';
+        let cryptoValue = '0'; 
+        let totalPortfolioValue = '0';
+        let knowledgeLevel = 'Beginner';
+        
+        try {
+            stockValue = this.calculateStockValue();
+            cryptoValue = this.calculateCryptoValue();
+            totalPortfolioValue = this.calculateTotalPortfolioValue();
+            knowledgeLevel = this.getKnowledgeLevel();
+        } catch (error) {
+            console.log('Portfolio calculation error:', error);
+        }
+
         // Pixel-art icons (using retro-style emojis)
         const coinIcon = 'https://cdn.jsdelivr.net/gh/twitter/twemoji@latest/assets/72x72/1fa99.png';
         const accuracyIcon = 'https://cdn.jsdelivr.net/gh/twitter/twemoji@latest/assets/72x72/1f3af.png';
@@ -401,6 +416,38 @@ class StatsManager {
         const statsContainer = document.createElement('div');
         statsContainer.id = 'stats-container';
         statsContainer.tabIndex = 0;
+
+        statsContainer.innerHTML = `
+            <div class="pixel-title">
+                <img class="pixel-icon" src="${statsIcon}" alt="Game" style="width:22px;height:22px;margin-right:8px;vertical-align:middle;" />
+                <span>PLAYER STATS</span>
+                <img class="pixel-icon" src="${statsIcon}" alt="Game" style="width:22px;height:22px;margin-left:8px;vertical-align:middle;" />
+            </div>
+            <div class="pixel-stat-box">
+                <img class="pixel-icon" src="${coinIcon}" alt="Coin" style="width:22px;height:22px;vertical-align:middle;" />
+                <span style="color: #ffb300;">Balance:</span> <span id="balance" style="margin-left: 6px;">0</span>
+            </div>
+            <div class="pixel-stat-box">
+                <img class="pixel-icon" src="${accuracyIcon}" alt="Accuracy" style="width:22px;height:22px;vertical-align:middle;" />
+                <span style="color: #ffb300;">Question Accuracy:</span> <span id="questionAccuracy" style="margin-left: 6px;">0%</span>
+            </div>
+            <div class="pixel-stat-box">
+                <img class="pixel-icon" src="${npcIcon}" alt="NPC" style="width:22px;height:22px;vertical-align:middle;" />
+                <span style="color: #ffb300;">NPC Cookies:</span> <span id="npcsTalkedTo" style="margin-left: 6px;">${npcCookiesCount}</span>
+            </div>
+            <div id="npcs-progress-bar-container">
+                <div id="npcs-progress-bar" style="width: ${progressPercentage}%;"></div>
+                <span id="npcs-progress-label">${npcCookiesCount} / ${totalAvailable}</span>
+            </div>
+            
+            <!-- Portfolio Button Section -->
+            <div style="margin-top: 12px; padding-top: 12px; border-top: 2px solid #ffb300;">
+                <div class="pixel-stat-box" style="justify-content: center; cursor: pointer;" id="portfolio-analysis-btn">
+                    <span style="color: #ffb300;">💼 Portfolio</span>
+                    <span style="margin-left: 8px; color: #4CAF50; font-size: 10px;">► Click to analyze</span>
+                </div>
+            </div>
+        `;
 
         // Add a pin button with retro styling
         const pinButton = document.createElement('button');
@@ -438,34 +485,32 @@ class StatsManager {
             click.play();
         });
 
-        statsContainer.innerHTML = `
-            <div class="pixel-title">
-                <img class="pixel-icon" src="${statsIcon}" alt="Game" style="width:22px;height:22px;margin-right:8px;vertical-align:middle;" />
-                <span>PLAYER STATS</span>
-                <img class="pixel-icon" src="${statsIcon}" alt="Game" style="width:22px;height:22px;margin-left:8px;vertical-align:middle;" />
-            </div>
-            <div class="pixel-stat-box">
-                <img class="pixel-icon" src="${coinIcon}" alt="Coin" style="width:22px;height:22px;vertical-align:middle;" />
-                <span style="color: #ffb300;">Balance:</span> <span id="balance" style="margin-left: 6px;">0</span>
-            </div>
-            <div class="pixel-stat-box">
-                <img class="pixel-icon" src="${accuracyIcon}" alt="Accuracy" style="width:22px;height:22px;vertical-align:middle;" />
-                <span style="color: #ffb300;">Question Accuracy:</span> <span id="questionAccuracy" style="margin-left: 6px;">0%</span>
-            </div>
-            <div class="pixel-stat-box">
-                <img class="pixel-icon" src="${npcIcon}" alt="NPC" style="width:22px;height:22px;vertical-align:middle;" />
-                <span style="color: #ffb300;">NPC Cookies:</span> <span id="npcsTalkedTo" style="margin-left: 6px;">${npcCookiesCount}</span>
-            </div>
-            <div id="npcs-progress-bar-container">
-                <div id="npcs-progress-bar" style="width: ${progressPercentage}%;"></div>
-                <span id="npcs-progress-label">${npcCookiesCount} / ${totalAvailable}</span>
-            </div>
-        `;
-
         statsContainer.appendChild(pinButton);
         statsWrapper.appendChild(statsButton);
         statsWrapper.appendChild(statsContainer);
         document.body.appendChild(statsWrapper);
+
+        // Add event listener for detailed portfolio button
+        setTimeout(() => {
+            const portfolioAnalysisBtn = document.getElementById('portfolio-analysis-btn');
+            if (portfolioAnalysisBtn) {
+                portfolioAnalysisBtn.addEventListener('click', () => {
+                    this.showPortfolioAnalysisOverlay();
+                });
+                
+                portfolioAnalysisBtn.addEventListener('mouseenter', () => {
+                    portfolioAnalysisBtn.style.background = 'rgba(255, 179, 0, 0.2)';
+                    portfolioAnalysisBtn.style.transform = 'scale(1.02)';
+                    portfolioAnalysisBtn.style.borderColor = '#ffd700';
+                });
+                
+                portfolioAnalysisBtn.addEventListener('mouseleave', () => {
+                    portfolioAnalysisBtn.style.background = 'rgba(255, 255, 255, 0.1)';
+                    portfolioAnalysisBtn.style.transform = 'scale(1)';
+                    portfolioAnalysisBtn.style.borderColor = '#ffb300';
+                });
+            }
+        }, 100);
 
         // Add hover sound effect
         const hoverSound = new Audio('data:audio/wav;base64,UklGRl9vT19XQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YU');
@@ -2665,18 +2710,667 @@ class FinTech extends Game {
         }, 1000);
     }
 
+    /**
+     * Show Portfolio Dashboard with comprehensive financial information
+     */
+    showPortfolioDashboard() {
+        // Remove existing dashboard if present
+        const existingDashboard = document.getElementById('portfolio-dashboard');
+        if (existingDashboard) {
+            existingDashboard.remove();
+        }
+
+        // Create dashboard container
+        const dashboard = document.createElement('div');
+        dashboard.id = 'portfolio-dashboard';
+        dashboard.style.cssText = `
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: linear-gradient(135deg, rgba(15, 15, 35, 0.95), rgba(25, 25, 55, 0.95));
+            backdrop-filter: blur(10px);
+            z-index: 10000;
+            display: flex;
+            flex-direction: column;
+            font-family: 'Arial', sans-serif;
+            overflow-y: auto;
+            animation: dashboardFadeIn 0.5s ease-out;
+        `;
+
+        // Add dashboard styles if not present
+        if (!document.getElementById('portfolio-dashboard-styles')) {
+            const styles = document.createElement('style');
+            styles.id = 'portfolio-dashboard-styles';
+            styles.textContent = `
+                @keyframes dashboardFadeIn {
+                    from { opacity: 0; transform: scale(0.9); }
+                    to { opacity: 1; transform: scale(1); }
+                }
+                
+                @keyframes cardSlideIn {
+                    from { opacity: 0; transform: translateY(30px); }
+                    to { opacity: 1; transform: translateY(0); }
+                }
+                
+                @keyframes numberCountUp {
+                    from { transform: scale(0.8); opacity: 0; }
+                    to { transform: scale(1); opacity: 1; }
+                }
+                
+                .portfolio-card {
+                    background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05));
+                    border: 1px solid rgba(255, 255, 255, 0.2);
+                    border-radius: 16px;
+                    backdrop-filter: blur(10px);
+                    animation: cardSlideIn 0.6s ease-out;
+                    transition: transform 0.3s ease, box-shadow 0.3s ease;
+                }
+                
+                .portfolio-card:hover {
+                    transform: translateY(-5px);
+                    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+                }
+                
+                .stat-number {
+                    animation: numberCountUp 0.8s ease-out;
+                }
+                
+                .progress-bar {
+                    background: rgba(255, 255, 255, 0.1);
+                    border-radius: 10px;
+                    overflow: hidden;
+                    height: 8px;
+                }
+                
+                .progress-fill {
+                    height: 100%;
+                    background: linear-gradient(90deg, #4CAF50, #81C784);
+                    border-radius: 10px;
+                    transition: width 1s ease;
+                }
+            `;
+            document.head.appendChild(styles);
+        }
+
+        // Header
+        const header = document.createElement('div');
+        header.style.cssText = `
+            background: linear-gradient(135deg, rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.1));
+            padding: 20px 30px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        `;
+
+        const headerTitle = document.createElement('h1');
+        headerTitle.style.cssText = `
+            color: #fff;
+            margin: 0;
+            font-size: 28px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        `;
+        headerTitle.innerHTML = `
+            <span style="font-size: 32px;">📊</span>
+            Financial Portfolio Dashboard
+        `;
+
+        const closeButton = document.createElement('button');
+        closeButton.style.cssText = `
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            color: #fff;
+            padding: 12px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 18px;
+            transition: all 0.3s ease;
+        `;
+        closeButton.innerHTML = '✕';
+        closeButton.onclick = () => dashboard.remove();
+        closeButton.onmouseover = () => {
+            closeButton.style.background = 'rgba(255, 100, 100, 0.3)';
+            closeButton.style.transform = 'scale(1.1)';
+        };
+        closeButton.onmouseout = () => {
+            closeButton.style.background = 'rgba(255, 255, 255, 0.1)';
+            closeButton.style.transform = 'scale(1)';
+        };
+
+        header.appendChild(headerTitle);
+        header.appendChild(closeButton);
+
+        // Main content with integrated grid layout
+        const content = document.createElement('div');
+        content.style.cssText = `
+            flex: 1;
+            padding: 30px;
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr;
+            grid-template-rows: auto auto auto;
+            gap: 20px;
+            max-width: 1400px;
+            margin: 0 auto;
+            width: 100%;
+        `;
+
+        // Portfolio Summary Card (spans full width)
+        const summaryCard = this.createSummaryCard();
+        summaryCard.style.gridColumn = '1 / -1';
+
+        // Left side: Holdings & Achievements (spans 2 columns)
+        const holdingsCard = this.createIntegratedHoldingsCard();
+        holdingsCard.style.gridColumn = '1 / 3';
+        holdingsCard.style.gridRow = '2 / 4';
+
+        // Right side: Performance and Activity cards
+        const performanceCard = this.createPerformanceCard();
+        const activityCard = this.createActivityCard();
+
+        content.appendChild(summaryCard);
+        content.appendChild(holdingsCard);
+        content.appendChild(performanceCard);
+        content.appendChild(activityCard);
+
+        dashboard.appendChild(header);
+        dashboard.appendChild(content);
+        document.body.appendChild(dashboard);
+
+        // Animate cards with staggered timing
+        setTimeout(() => this.animateCardEntrance(), 100);
+    }
+
+    createSummaryCard() {
+        const card = document.createElement('div');
+        card.className = 'portfolio-card';
+        card.style.cssText = `
+            padding: 30px;
+            text-align: center;
+            background: linear-gradient(135deg, rgba(76, 175, 80, 0.2), rgba(129, 199, 132, 0.1));
+            border: 1px solid rgba(76, 175, 80, 0.3);
+        `;
+
+        const balance = localStorage.getItem('balance') || '100,000';
+        const totalValue = this.calculateTotalPortfolioValue();
+
+        card.innerHTML = `
+            <div style="display: flex; justify-content: space-around; align-items: center; color: #fff;">
+                <div>
+                    <div style="font-size: 16px; opacity: 0.8; margin-bottom: 10px;">💰 Total Balance</div>
+                    <div class="stat-number" style="font-size: 36px; font-weight: bold; color: #4CAF50;">$${balance}</div>
+                </div>
+                <div style="width: 1px; height: 60px; background: rgba(255,255,255,0.2);"></div>
+                <div>
+                    <div style="font-size: 16px; opacity: 0.8; margin-bottom: 10px;">📈 Portfolio Value</div>
+                    <div class="stat-number" style="font-size: 36px; font-weight: bold; color: #81C784;">$${totalValue}</div>
+                </div>
+                <div style="width: 1px; height: 60px; background: rgba(255,255,255,0.2);"></div>
+                <div>
+                    <div style="font-size: 16px; opacity: 0.8; margin-bottom: 10px;">🎯 Progress</div>
+                    <div class="stat-number" style="font-size: 36px; font-weight: bold; color: #A5D6A7;">${Object.keys(this.getAllNpcCookies()).length}/6</div>
+                    <div style="font-size: 12px; opacity: 0.7;">NPCs Completed</div>
+                </div>
+            </div>
+        `;
+
+        return card;
+    }
+
+    createBalanceCard() {
+        const card = document.createElement('div');
+        card.className = 'portfolio-card';
+        card.style.cssText = `
+            padding: 25px;
+            color: #fff;
+        `;
+
+        const accuracy = localStorage.getItem('questionAccuracy') || '0%';
+        
+        card.innerHTML = `
+            <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 20px;">
+                <span style="font-size: 24px;">🎯</span>
+                <h3 style="margin: 0; font-size: 18px;">Performance</h3>
+            </div>
+            <div style="margin-bottom: 15px;">
+                <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                    <span>Quiz Accuracy</span>
+                    <span style="font-weight: bold; color: #4CAF50;">${accuracy}</span>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-fill" style="width: ${accuracy}"></div>
+                </div>
+            </div>
+            <div style="margin-bottom: 15px;">
+                <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                    <span>Game Progress</span>
+                    <span style="font-weight: bold; color: #2196F3;">${Math.round((Object.keys(this.getAllNpcCookies()).length / 6) * 100)}%</span>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-fill" style="width: ${(Object.keys(this.getAllNpcCookies()).length / 6) * 100}%; background: linear-gradient(90deg, #2196F3, #64B5F6);"></div>
+                </div>
+            </div>
+        `;
+
+        return card;
+    }
+
+    createPerformanceCard() {
+        const card = document.createElement('div');
+        card.className = 'portfolio-card';
+        card.style.cssText = `
+            padding: 25px;
+            color: #fff;
+        `;
+
+        const totalStockValue = this.getMockStockData().reduce((sum, stock) => sum + parseFloat(stock.value.replace(/,/g, '')), 0);
+        const totalCryptoValue = this.getMockCryptoData().reduce((sum, crypto) => sum + parseFloat(crypto.value.replace(/,/g, '')), 0);
+        const balance = parseFloat((localStorage.getItem('balance') || '100000').replace(/,/g, ''));
+
+        card.innerHTML = `
+            <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 20px;">
+                <span style="font-size: 24px;">💼</span>
+                <h3 style="margin: 0; font-size: 18px;">Quick Stats</h3>
+            </div>
+            
+            <div style="margin-bottom: 20px;">
+                <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                    <span style="font-size: 14px;">💰 Cash Balance</span>
+                    <span style="font-weight: bold; color: #4CAF50;">$${balance.toLocaleString()}</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                    <span style="font-size: 14px;">📈 Stock Value</span>
+                    <span style="font-weight: bold; color: #FF9800;">$${totalStockValue.toLocaleString()}</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                    <span style="font-size: 14px;">₿ Crypto Value</span>
+                    <span style="font-weight: bold; color: #FFC107;">$${totalCryptoValue.toLocaleString()}</span>
+                </div>
+                <div style="border-top: 1px solid rgba(255,255,255,0.2); margin-top: 12px; padding-top: 12px;">
+                    <div style="display: flex; justify-content: space-between;">
+                        <span style="font-size: 16px; font-weight: bold;">Total Portfolio</span>
+                        <span style="font-weight: bold; color: #2196F3; font-size: 18px;">$${(balance + totalStockValue + totalCryptoValue).toLocaleString()}</span>
+                    </div>
+                </div>
+            </div>
+
+            <div style="background: rgba(76, 175, 80, 0.1); border: 1px solid rgba(76, 175, 80, 0.3); border-radius: 10px; padding: 15px;">
+                <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 10px;">
+                    <span style="font-size: 16px;">🎯</span>
+                    <span style="font-weight: bold; color: #4CAF50;">Performance Snapshot</span>
+                </div>
+                <div style="font-size: 12px; line-height: 1.5; opacity: 0.9;">
+                    Your portfolio is performing well with diversified holdings across stocks and crypto. Continue learning from NPCs to unlock more investment strategies!
+                </div>
+            </div>
+        `;
+
+        return card;
+    }
+
+    createActivityCard() {
+        const card = document.createElement('div');
+        card.className = 'portfolio-card';
+        card.style.cssText = `
+            padding: 25px;
+            color: #fff;
+        `;
+
+        const npcCookies = this.getAllNpcCookies();
+        const nextNpc = this.getNextNpcToVisit();
+
+        card.innerHTML = `
+            <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 20px;">
+                <span style="font-size: 24px;">🎮</span>
+                <h3 style="margin: 0; font-size: 18px;">Game Status</h3>
+            </div>
+            
+            <div style="margin-bottom: 20px;">
+                <div style="background: rgba(33, 150, 243, 0.1); border: 1px solid rgba(33, 150, 243, 0.3); border-radius: 10px; padding: 15px; margin-bottom: 15px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <span style="font-weight: bold;">NPCs Completed</span>
+                        <span style="font-size: 24px; font-weight: bold; color: #2196F3;">${Object.keys(npcCookies).length}/6</span>
+                    </div>
+                    <div class="progress-bar" style="margin-top: 10px;">
+                        <div class="progress-fill" style="width: ${(Object.keys(npcCookies).length / 6) * 100}%; background: linear-gradient(90deg, #2196F3, #64B5F6);"></div>
+                    </div>
+                </div>
+                
+                ${nextNpc ? `
+                    <div style="background: rgba(255, 152, 0, 0.1); border: 1px solid rgba(255, 152, 0, 0.3); border-radius: 10px; padding: 15px;">
+                        <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
+                            <span style="font-size: 16px;">🎯</span>
+                            <span style="font-weight: bold; color: #FF9800;">Next Objective</span>
+                        </div>
+                        <div style="font-size: 14px; opacity: 0.9;">
+                            Visit <strong>${nextNpc.name}</strong><br>
+                            <span style="font-size: 12px; color: #FF9800;">${nextNpc.description}</span>
+                        </div>
+                    </div>
+                ` : `
+                    <div style="background: rgba(76, 175, 80, 0.1); border: 1px solid rgba(76, 175, 80, 0.3); border-radius: 10px; padding: 15px;">
+                        <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
+                            <span style="font-size: 16px;">🎉</span>
+                            <span style="font-weight: bold; color: #4CAF50;">All Complete!</span>
+                        </div>
+                        <div style="font-size: 14px; opacity: 0.9;">
+                            Congratulations! You've completed all NPC interactions and mastered the fintech world!
+                        </div>
+                    </div>
+                `}
+            </div>
+
+            <div style="border-top: 1px solid rgba(255,255,255,0.1); padding-top: 15px;">
+                <div style="font-size: 14px; font-weight: bold; margin-bottom: 10px; color: #E91E63;">🕒 Play Time Tracking</div>
+                <div style="font-size: 12px; opacity: 0.8; line-height: 1.4;">
+                    <div>Session started: Today</div>
+                    <div>Total earnings: $${this.calculateTotalEarnings()}</div>
+                    <div>Knowledge level: ${this.getKnowledgeLevel()}</div>
+                </div>
+            </div>
+        `;
+
+        return card;
+    }
+
+    createHoldingsSection() {
+        const section = document.createElement('div');
+        section.className = 'portfolio-card';
+        section.style.cssText = `
+            padding: 30px;
+            color: #fff;
+        `;
+
+        const npcCookies = this.getAllNpcCookies();
+        const achievements = Object.keys(npcCookies);
+
+        section.innerHTML = `
+            <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 25px;">
+                <span style="font-size: 24px;">🏆</span>
+                <h3 style="margin: 0; font-size: 20px;">Achievements & Progress</h3>
+            </div>
+            
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px;">
+                ${this.createAchievementCards(achievements)}
+            </div>
+            
+            <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid rgba(255,255,255,0.1);">
+                <h4 style="margin-bottom: 15px;">Recent Activity</h4>
+                <div style="max-height: 200px; overflow-y: auto;">
+                    ${this.createActivityFeed()}
+                </div>
+            </div>
+        `;
+
+        return section;
+    }
+
+    createAchievementCards(achievements) {
+        const allNpcs = ['Stock-NPC', 'Casino-NPC', 'Mining-NPC', 'Crypto-NPC', 'Bank-NPC', 'Market Computer'];
+        const npcNames = {
+            'Stock-NPC': 'J.P. Morgan',
+            'Casino-NPC': 'Frank Sinatra', 
+            'Mining-NPC': 'Max the Miner',
+            'Crypto-NPC': 'Satoshi Nakamoto',
+            'Bank-NPC': 'Janet Yellen',
+            'Market Computer': 'Market Computer'
+        };
+        const npcEmojis = {
+            'Stock-NPC': '📊',
+            'Casino-NPC': '🎰',
+            'Mining-NPC': '⛏️',
+            'Crypto-NPC': '₿',
+            'Bank-NPC': '🏦',
+            'Market Computer': '💻'
+        };
+
+        return allNpcs.map(npc => {
+            const completed = achievements.includes(npc);
+            return `
+                <div style="padding: 15px; background: ${completed ? 'rgba(76, 175, 80, 0.2)' : 'rgba(255, 255, 255, 0.05)'}; border-radius: 12px; border: 1px solid ${completed ? 'rgba(76, 175, 80, 0.4)' : 'rgba(255, 255, 255, 0.1)'};">
+                    <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
+                        <span style="font-size: 20px;">${npcEmojis[npc]}</span>
+                        <span style="font-weight: bold; ${!completed ? 'opacity: 0.5;' : ''}">${npcNames[npc]}</span>
+                        ${completed ? '<span style="color: #4CAF50; font-size: 16px;">✓</span>' : ''}
+                    </div>
+                    <div style="font-size: 12px; opacity: 0.7;">
+                        ${completed ? 'Completed interaction' : 'Not visited yet'}
+                    </div>
+                </div>
+            `;
+        }).join('');
+    }
+
+    createActivityFeed() {
+        const activities = [
+            '🏦 Visited Janet Yellen - Bank Analytics',
+            '📊 Interacted with J.P. Morgan - Stock Exchange', 
+            '🎰 Met Frank Sinatra - Casino Games',
+            '₿ Learned from Satoshi - Crypto Hub',
+            '⛏️ Talked to Max - Mining Operations'
+        ];
+
+        return activities.slice(0, 3).map(activity => `
+            <div style="padding: 10px; margin-bottom: 8px; background: rgba(255,255,255,0.05); border-radius: 8px; border-left: 3px solid #4CAF50;">
+                <div style="font-size: 14px;">${activity}</div>
+                <div style="font-size: 12px; opacity: 0.6; margin-top: 4px;">Recently completed</div>
+            </div>
+        `).join('');
+    }
+
+    getMockStockData() {
+        return [
+            { symbol: 'AAPL', shares: 10, value: '1,750.00', change: 2.3 },
+            { symbol: 'GOOGL', shares: 5, value: '1,325.00', change: -1.2 },
+            { symbol: 'TSLA', shares: 8, value: '1,840.00', change: 4.7 },
+            { symbol: 'MSFT', shares: 12, value: '2,160.00', change: 1.8 }
+        ];
+    }
+
+    getMockCryptoData() {
+        return [
+            { symbol: 'BTC', amount: 0.05, value: '2,150.00', change: 3.2 },
+            { symbol: 'ETH', amount: 1.2, value: '2,640.00', change: -0.8 },
+            { symbol: 'ADA', amount: 500, value: '180.00', change: 5.1 }
+        ];
+    }
+
+    calculateTotalPortfolioValue() {
+        const balance = parseFloat((localStorage.getItem('balance') || '100000').replace(/,/g, ''));
+        const stockValue = this.getMockStockData().reduce((sum, stock) => sum + parseFloat(stock.value.replace(/,/g, '')), 0);
+        const cryptoValue = this.getMockCryptoData().reduce((sum, crypto) => sum + parseFloat(crypto.value.replace(/,/g, '')), 0);
+        
+        return (balance + stockValue + cryptoValue).toLocaleString();
+    }
+
+    animateCardEntrance() {
+        const cards = document.querySelectorAll('.portfolio-card');
+        cards.forEach((card, index) => {
+            setTimeout(() => {
+                card.style.animationDelay = `${index * 0.1}s`;
+                card.style.opacity = '1';
+            }, index * 100);
+        });
+    }
+
+    getNextNpcToVisit() {
+        const allNpcs = [
+            { id: 'Stock-NPC', name: 'J.P. Morgan', description: 'Learn about stock market investing' },
+            { id: 'Casino-NPC', name: 'Frank Sinatra', description: 'Understand risk and gambling vs investing' },
+            { id: 'Mining-NPC', name: 'Max the Miner', description: 'Discover mining and commodities' },
+            { id: 'Crypto-NPC', name: 'Satoshi Nakamoto', description: 'Explore cryptocurrency and blockchain' },
+            { id: 'Bank-NPC', name: 'Janet Yellen', description: 'Master banking and financial policy' },
+            { id: 'Market Computer', name: 'Market Computer', description: 'Analyze market data and trends' }
+        ];
+        
+        const completedNpcs = this.getAllNpcCookies();
+        
+        for (let npc of allNpcs) {
+            if (!completedNpcs[npc.id]) {
+                return npc;
+            }
+        }
+        
+        return null; // All NPCs completed
+    }
+
+    calculateTotalEarnings() {
+        const balance = parseFloat((localStorage.getItem('balance') || '100000').replace(/,/g, ''));
+        const stockValue = this.getMockStockData().reduce((sum, stock) => sum + parseFloat(stock.value.replace(/,/g, '')), 0);
+        const cryptoValue = this.getMockCryptoData().reduce((sum, crypto) => sum + parseFloat(crypto.value.replace(/,/g, '')), 0);
+        
+        return (balance + stockValue + cryptoValue - 100000).toLocaleString(); // Subtract starting amount
+    }
+
+    getKnowledgeLevel() {
+        const completedNpcs = Object.keys(this.getAllNpcCookies()).length;
+        const accuracy = parseInt(localStorage.getItem('questionAccuracy') || '0');
+        
+        if (completedNpcs >= 6 && accuracy >= 80) return 'Expert';
+        if (completedNpcs >= 4 && accuracy >= 60) return 'Advanced';
+        if (completedNpcs >= 2 && accuracy >= 40) return 'Intermediate';
+        return 'Beginner';
+    }
+
+    calculateStockValue() {
+        const stockValue = this.getMockStockData().reduce((sum, stock) => sum + parseFloat(stock.value.replace(/,/g, '')), 0);
+        return stockValue.toLocaleString();
+    }
+
+    calculateCryptoValue() {
+        const cryptoValue = this.getMockCryptoData().reduce((sum, crypto) => sum + parseFloat(crypto.value.replace(/,/g, '')), 0);
+        return cryptoValue.toLocaleString();
+    }
+
     initFinTechGame(environment) {
         this.initUser();
         this.inventoryManager.giveStartingItems();
         this.showGameInstructions();
+        
+        // Add portfolio dashboard hotkey
         document.addEventListener('keydown', (event) => {
             if (event.key.toLowerCase() === 'h') {
                 this.showGameInstructions();
             }
+            if (event.key.toLowerCase() === 'p') {
+                this.showPortfolioDashboard();
+            }
         });
+        
         const gameLevelClasses = environment.gameLevelClasses;
         this.gameControl = new GameControl(this, gameLevelClasses);
         this.gameControl.start();
+    }
+
+    createIntegratedHoldingsCard() {
+        const card = document.createElement('div');
+        card.className = 'portfolio-card';
+        card.style.cssText = `
+            padding: 30px;
+            color: #fff;
+            display: flex;
+            flex-direction: column;
+            height: fit-content;
+        `;
+
+        const npcCookies = this.getAllNpcCookies();
+        const achievements = Object.keys(npcCookies);
+        const accuracy = localStorage.getItem('questionAccuracy') || '0%';
+        const mockStocks = this.getMockStockData();
+        const mockCrypto = this.getMockCryptoData();
+
+        card.innerHTML = `
+            <!-- Holdings & Analysis Header -->
+            <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 25px; padding-bottom: 15px; border-bottom: 1px solid rgba(255,255,255,0.2);">
+                <span style="font-size: 24px;">📈</span>
+                <h3 style="margin: 0; font-size: 20px;">Holdings & Performance Analysis</h3>
+            </div>
+            
+            <!-- Performance Metrics Section -->
+            <div style="margin-bottom: 30px;">
+                <h4 style="margin-bottom: 15px; color: #4CAF50;">📊 Performance Metrics</h4>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px;">
+                    <div style="padding: 15px; background: rgba(76, 175, 80, 0.1); border-radius: 10px; border: 1px solid rgba(76, 175, 80, 0.3);">
+                        <div style="font-size: 14px; opacity: 0.8; margin-bottom: 8px;">Quiz Accuracy</div>
+                        <div style="font-size: 24px; font-weight: bold; color: #4CAF50;">${accuracy}</div>
+                        <div class="progress-bar" style="margin-top: 8px;">
+                            <div class="progress-fill" style="width: ${accuracy}"></div>
+                        </div>
+                    </div>
+                    <div style="padding: 15px; background: rgba(33, 150, 243, 0.1); border-radius: 10px; border: 1px solid rgba(33, 150, 243, 0.3);">
+                        <div style="font-size: 14px; opacity: 0.8; margin-bottom: 8px;">Game Progress</div>
+                        <div style="font-size: 24px; font-weight: bold; color: #2196F3;">${Math.round((Object.keys(this.getAllNpcCookies()).length / 6) * 100)}%</div>
+                        <div class="progress-bar" style="margin-top: 8px;">
+                            <div class="progress-fill" style="width: ${(Object.keys(this.getAllNpcCookies()).length / 6) * 100}%; background: linear-gradient(90deg, #2196F3, #64B5F6);"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Stock Holdings Section -->
+            <div style="margin-bottom: 30px;">
+                <h4 style="margin-bottom: 15px; color: #FF9800;">📈 Stock Portfolio</h4>
+                <div style="background: rgba(255, 255, 255, 0.05); border-radius: 10px; padding: 15px;">
+                    ${mockStocks.map(stock => `
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; padding: 8px; background: rgba(255,255,255,0.05); border-radius: 6px;">
+                            <div>
+                                <div style="font-weight: bold; font-size: 16px;">${stock.symbol}</div>
+                                <div style="font-size: 12px; opacity: 0.7;">${stock.shares} shares</div>
+                            </div>
+                            <div style="text-align: right;">
+                                <div style="color: ${stock.change > 0 ? '#4CAF50' : '#f44336'}; font-weight: bold;">
+                                    ${stock.change > 0 ? '▲' : '▼'} ${Math.abs(stock.change).toFixed(2)}%
+                                </div>
+                                <div style="font-size: 14px; font-weight: bold;">$${stock.value}</div>
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+            </div>
+
+            <!-- Crypto Holdings Section -->
+            <div style="margin-bottom: 30px;">
+                <h4 style="margin-bottom: 15px; color: #FFC107;">₿ Crypto Portfolio</h4>
+                <div style="background: rgba(255, 255, 255, 0.05); border-radius: 10px; padding: 15px;">
+                    ${mockCrypto.map(crypto => `
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; padding: 8px; background: rgba(255,255,255,0.05); border-radius: 6px;">
+                            <div>
+                                <div style="font-weight: bold; font-size: 16px;">${crypto.symbol}</div>
+                                <div style="font-size: 12px; opacity: 0.7;">${crypto.amount} ${crypto.symbol}</div>
+                            </div>
+                            <div style="text-align: right;">
+                                <div style="color: ${crypto.change > 0 ? '#4CAF50' : '#f44336'}; font-weight: bold;">
+                                    ${crypto.change > 0 ? '▲' : '▼'} ${Math.abs(crypto.change).toFixed(2)}%
+                                </div>
+                                <div style="font-size: 14px; font-weight: bold;">$${crypto.value}</div>
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+            </div>
+            
+            <!-- Achievements Section -->
+            <div>
+                <h4 style="margin-bottom: 15px; color: #E91E63;">🏆 NPC Achievements</h4>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px;">
+                    ${this.createAchievementCards(achievements)}
+                </div>
+            </div>
+            
+            <!-- Recent Activity -->
+            <div style="margin-top: 25px; padding-top: 20px; border-top: 1px solid rgba(255,255,255,0.1);">
+                <h4 style="margin-bottom: 15px; color: #9C27B0;">📋 Recent Activity</h4>
+                <div style="max-height: 150px; overflow-y: auto;">
+                    ${this.createActivityFeed()}
+                </div>
+            </div>
+        `;
+
+        return card;
     }
 }
 
