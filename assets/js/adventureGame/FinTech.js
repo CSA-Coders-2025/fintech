@@ -442,7 +442,7 @@ class StatsManager {
             
             <!-- Portfolio Button Section -->
             <div style="margin-top: 12px; padding-top: 12px; border-top: 2px solid #ffb300;">
-                <div class="pixel-stat-box" style="justify-content: center; cursor: pointer;" id="portfolio-analysis-btn">
+                <div class="pixel-stat-box" style="justify-content: center; cursor: pointer;" id="portfolio-analysis-btn" onclick="gameEnv.game.showPortfolioAnalysisOverlay()">
                     <span style="color: #ffb300;">💼 Portfolio</span>
                     <span style="margin-left: 8px; color: #4CAF50; font-size: 10px;">► Click to analyze</span>
                 </div>
@@ -490,11 +490,16 @@ class StatsManager {
         statsWrapper.appendChild(statsContainer);
         document.body.appendChild(statsWrapper);
 
-        // Add event listener for detailed portfolio button
+        // Add event listener for portfolio analysis button
         setTimeout(() => {
             const portfolioAnalysisBtn = document.getElementById('portfolio-analysis-btn');
+            console.log('Looking for portfolio button:', portfolioAnalysisBtn); // Debug log
             if (portfolioAnalysisBtn) {
-                portfolioAnalysisBtn.addEventListener('click', () => {
+                console.log('Portfolio button found, adding event listener'); // Debug log
+                portfolioAnalysisBtn.addEventListener('click', (e) => {
+                    console.log('Portfolio button clicked!'); // Debug log
+                    e.preventDefault();
+                    e.stopPropagation();
                     this.showPortfolioAnalysisOverlay();
                 });
                 
@@ -509,8 +514,10 @@ class StatsManager {
                     portfolioAnalysisBtn.style.transform = 'scale(1)';
                     portfolioAnalysisBtn.style.borderColor = '#ffb300';
                 });
+            } else {
+                console.log('Portfolio button not found!'); // Debug log
             }
-        }, 100);
+        }, 200); // Increased timeout to ensure DOM is ready
 
         // Add hover sound effect
         const hoverSound = new Audio('data:audio/wav;base64,UklGRl9vT19XQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YU');
@@ -3371,6 +3378,254 @@ class FinTech extends Game {
         `;
 
         return card;
+    }
+
+    /**
+     * Show Portfolio Analysis Overlay with blurred background
+     */
+    showPortfolioAnalysisOverlay() {
+        // Remove existing overlay if present
+        const existingOverlay = document.getElementById('portfolio-analysis-overlay');
+        if (existingOverlay) {
+            existingOverlay.remove();
+        }
+
+        // Calculate values safely
+        let stockValue = '0';
+        let cryptoValue = '0'; 
+        let totalPortfolioValue = '0';
+        let knowledgeLevel = 'Beginner';
+        let balance = localStorage.getItem('balance') || '100,000';
+        let accuracy = localStorage.getItem('questionAccuracy') || '0%';
+        
+        try {
+            stockValue = this.calculateStockValue();
+            cryptoValue = this.calculateCryptoValue();
+            totalPortfolioValue = this.calculateTotalPortfolioValue();
+            knowledgeLevel = this.getKnowledgeLevel();
+        } catch (error) {
+            console.log('Portfolio calculation error:', error);
+        }
+
+        // Create overlay container with blur effect
+        const overlay = document.createElement('div');
+        overlay.id = 'portfolio-analysis-overlay';
+        overlay.style.cssText = `
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(10px);
+            z-index: 10001;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            animation: overlayFadeIn 0.3s ease-out;
+        `;
+
+        // Add overlay styles if not present
+        if (!document.getElementById('portfolio-overlay-styles')) {
+            const styles = document.createElement('style');
+            styles.id = 'portfolio-overlay-styles';
+            styles.textContent = `
+                @keyframes overlayFadeIn {
+                    from { opacity: 0; }
+                    to { opacity: 1; }
+                }
+                
+                @keyframes analysisSlideIn {
+                    from { opacity: 0; transform: scale(0.9) translateY(20px); }
+                    to { opacity: 1; transform: scale(1) translateY(0); }
+                }
+                
+                .analysis-card {
+                    background: linear-gradient(135deg, rgba(15, 15, 35, 0.95), rgba(25, 25, 55, 0.95));
+                    border: 2px solid #ffb300;
+                    border-radius: 16px;
+                    backdrop-filter: blur(15px);
+                    animation: analysisSlideIn 0.4s ease-out;
+                    box-shadow: 0 0 30px rgba(255, 179, 0, 0.3);
+                }
+                
+                .metric-item {
+                    background: rgba(255, 255, 255, 0.05);
+                    border: 1px solid rgba(255, 179, 0, 0.3);
+                    border-radius: 8px;
+                    padding: 15px;
+                    margin: 8px 0;
+                    transition: all 0.3s ease;
+                }
+                
+                .metric-item:hover {
+                    background: rgba(255, 255, 255, 0.1);
+                    border-color: #ffd700;
+                    transform: translateX(5px);
+                }
+            `;
+            document.head.appendChild(styles);
+        }
+
+        // Create analysis panel
+        const analysisPanel = document.createElement('div');
+        analysisPanel.className = 'analysis-card';
+        analysisPanel.style.cssText = `
+            width: 90%;
+            max-width: 600px;
+            max-height: 80vh;
+            overflow-y: auto;
+            padding: 30px;
+            color: #fff;
+            font-family: 'Press Start 2P', cursive;
+            position: relative;
+        `;
+
+        const completedNpcs = Object.keys(this.getAllNpcCookies()).length;
+        const mockStocks = this.getMockStockData();
+        const mockCrypto = this.getMockCryptoData();
+
+        analysisPanel.innerHTML = `
+            <!-- Close Button -->
+            <button style="
+                position: absolute;
+                top: 15px;
+                right: 15px;
+                background: rgba(255, 100, 100, 0.2);
+                border: 1px solid #ff6b6b;
+                color: #fff;
+                padding: 8px 12px;
+                border-radius: 6px;
+                cursor: pointer;
+                font-size: 16px;
+                transition: all 0.3s ease;
+            " onclick="this.closest('#portfolio-analysis-overlay').remove()">✕</button>
+
+            <!-- Header -->
+            <div style="text-align: center; margin-bottom: 25px; padding-bottom: 15px; border-bottom: 2px solid #ffb300;">
+                <h2 style="margin: 0; font-size: 16px; color: #ffeb3b;">
+                    💼 PORTFOLIO ANALYSIS
+                </h2>
+                <div style="font-size: 10px; opacity: 0.8; margin-top: 8px;">
+                    Comprehensive Financial Overview
+                </div>
+            </div>
+
+            <!-- Summary Cards -->
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 25px;">
+                <div class="metric-item">
+                    <div style="font-size: 8px; opacity: 0.8; margin-bottom: 5px;">💰 CASH BALANCE</div>
+                    <div style="font-size: 14px; color: #4CAF50;">$${balance}</div>
+                </div>
+                <div class="metric-item">
+                    <div style="font-size: 8px; opacity: 0.8; margin-bottom: 5px;">📊 TOTAL PORTFOLIO</div>
+                    <div style="font-size: 14px; color: #2196F3;">$${totalPortfolioValue}</div>
+                </div>
+            </div>
+
+            <!-- Holdings Breakdown -->
+            <div style="margin-bottom: 25px;">
+                <h3 style="font-size: 12px; margin-bottom: 15px; color: #FF9800;">📈 HOLDINGS BREAKDOWN</h3>
+                
+                <div class="metric-item">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <span style="font-size: 10px;">Stock Investments</span>
+                        <span style="font-size: 12px; color: #FF9800;">$${stockValue}</span>
+                    </div>
+                    <div style="font-size: 8px; opacity: 0.7; margin-top: 5px;">
+                        ${mockStocks.length} different stocks
+                    </div>
+                </div>
+                
+                <div class="metric-item">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <span style="font-size: 10px;">Cryptocurrency</span>
+                        <span style="font-size: 12px; color: #FFC107;">$${cryptoValue}</span>
+                    </div>
+                    <div style="font-size: 8px; opacity: 0.7; margin-top: 5px;">
+                        ${mockCrypto.length} different currencies
+                    </div>
+                </div>
+            </div>
+
+            <!-- Performance Metrics -->
+            <div style="margin-bottom: 25px;">
+                <h3 style="font-size: 12px; margin-bottom: 15px; color: #E91E63;">🎯 PERFORMANCE METRICS</h3>
+                
+                <div class="metric-item">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <span style="font-size: 10px;">Knowledge Level</span>
+                        <span style="font-size: 12px; color: #2196F3;">${knowledgeLevel}</span>
+                    </div>
+                </div>
+                
+                <div class="metric-item">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <span style="font-size: 10px;">Quiz Accuracy</span>
+                        <span style="font-size: 12px; color: #4CAF50;">${accuracy}</span>
+                    </div>
+                </div>
+                
+                <div class="metric-item">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <span style="font-size: 10px;">NPCs Completed</span>
+                        <span style="font-size: 12px; color: #9C27B0;">${completedNpcs}/6</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div style="display: flex; gap: 10px; justify-content: center;">
+                <button style="
+                    background: rgba(76, 175, 80, 0.2);
+                    border: 1px solid #4CAF50;
+                    color: #4CAF50;
+                    padding: 8px 12px;
+                    border-radius: 6px;
+                    cursor: pointer;
+                    font-family: 'Press Start 2P', cursive;
+                    font-size: 8px;
+                    transition: all 0.3s ease;
+                " onclick="
+                    this.closest('#portfolio-analysis-overlay').remove();
+                    document.querySelector('#stats-container').style.display = 'block';
+                ">BACK TO STATS</button>
+                
+                <button style="
+                    background: rgba(33, 150, 243, 0.2);
+                    border: 1px solid #2196F3;
+                    color: #2196F3;
+                    padding: 8px 12px;
+                    border-radius: 6px;
+                    cursor: pointer;
+                    font-family: 'Press Start 2P', cursive;
+                    font-size: 8px;
+                    transition: all 0.3s ease;
+                " onclick="
+                    this.closest('#portfolio-analysis-overlay').remove();
+                    gameEnv.game.showPortfolioDashboard();
+                ">DETAILED VIEW</button>
+            </div>
+        `;
+
+        overlay.appendChild(analysisPanel);
+        document.body.appendChild(overlay);
+
+        // Close on background click
+        overlay.addEventListener('click', (e) => {
+            if (e.target === overlay) {
+                overlay.remove();
+            }
+        });
+
+        // Close on Escape key
+        const escapeHandler = (e) => {
+            if (e.key === 'Escape') {
+                overlay.remove();
+                document.removeEventListener('keydown', escapeHandler);
+            }
+        };
+        document.addEventListener('keydown', escapeHandler);
     }
 }
 
