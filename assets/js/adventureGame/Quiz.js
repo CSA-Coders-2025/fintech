@@ -1,4 +1,3 @@
-import Game from "./GameEngine/Game.js";
 class Quiz {
     constructor(game = null) {
         this.game = game;
@@ -610,52 +609,33 @@ async openPanel(npcData, callback) {
     
         const callback = this.callback;
         const npcCategory = this.currentNpc?.npcCategory;
-        let shouldAwardCookie = false;
-        
+    
         if (isCorrect && npcCategory) {
-            // Check if this NPC already has a cookie
-            const existingCookie = this.game && this.game.getNpcCookie ? this.game.getNpcCookie(npcCategory) : null;
+            if (!this.answeredQuestionsByNpc[npcCategory]) {
+                this.answeredQuestionsByNpc[npcCategory] = new Set();
+            }
+            this.answeredQuestionsByNpc[npcCategory].add(this.currentNpc.questionId);
             
-            if (!existingCookie) {
-                // This is the first correct answer from this NPC - award cookie
-                shouldAwardCookie = true;
-                
-                if (!this.answeredQuestionsByNpc[npcCategory]) {
-                    this.answeredQuestionsByNpc[npcCategory] = new Set();
+            // Award NPC cookie for correct answer
+            try {
+                if (this.game && this.game.giveNpcCookie) {
+                    this.game.giveNpcCookie(npcCategory, "completed", "Great job answering the quiz questions! You've demonstrated your knowledge.");
+                    console.log(`NPC Cookie awarded for ${npcCategory}`);
                 }
-                this.answeredQuestionsByNpc[npcCategory].add(this.currentNpc.questionId);
-                
-                // Award NPC cookie for correct answer
-                try {
-                    if (this.game && this.game.giveNpcCookie) {
-                        this.game.giveNpcCookie(npcCategory, "completed", "Great job answering the quiz question! You've demonstrated your knowledge.");
-                        console.log(`NPC Cookie awarded for ${npcCategory}`);
-                    }
-                } catch (error) {
-                    console.error("Error awarding NPC cookie:", error);
-                }
-            } else {
-                // NPC already has a cookie, just track the answered question
-                if (!this.answeredQuestionsByNpc[npcCategory]) {
-                    this.answeredQuestionsByNpc[npcCategory] = new Set();
-                }
-                this.answeredQuestionsByNpc[npcCategory].add(this.currentNpc.questionId);
+            } catch (error) {
+                console.error("Error awarding NPC cookie:", error);
             }
         }
         
+    
         setTimeout(() => {
             if (callback) callback(isCorrect);
     
-            // Only close the panel after awarding a cookie, or if answer was incorrect
-            if (shouldAwardCookie || !isCorrect) {
-                this.closePanel();
+            // Chain next question if available
+            if (npcCategory) {
+                this.openPanel(npcCategory, callback);
             } else {
-                // For NPCs that already have cookies, continue with more questions
-                if (npcCategory) {
-                    this.openPanel(npcCategory, callback);
-                } else {
-                    this.closePanel();
-                }
+                this.closePanel();
             }
         }, 1500);
     }
