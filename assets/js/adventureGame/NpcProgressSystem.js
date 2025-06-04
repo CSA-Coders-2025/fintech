@@ -3,12 +3,14 @@ import showDialogBox from './DialogBox.js';
 class NpcProgressSystem {
     constructor() {
         this.progressionOrder = [
-            "Stock-NPC",
-            "Fidelity",
-            "Schwab",
-            "Casino-NPC",
-            "Crypto-NPC",
-            "Bank-NPC"
+            'Stock-NPC',        // J.P. Morgan (fixed the space issue)
+            'Casino-NPC',        // Frank Sinatra
+            'Fidelity',          // Fidelity
+            'Schwab',            // Schwab
+            'Mining-NPC',        // Mining Man
+            'Crypto-NPC',        // Satoshi Nakamoto
+            'Bank-NPC',          // Janet Yellen
+            'Market Computer'
         ];
     }
 

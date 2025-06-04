@@ -1,4 +1,4 @@
-import Game from './Game.js';
+import Game from './GameEngine/Game.js';
 import GameControl from './GameEngine/GameControl.js';
 import Quiz from './Quiz.js';
 import Inventory from "./Inventory.js";
@@ -42,7 +42,7 @@ class StatsManager {
     }
     async fetchStats(personId) {
         const endpoints = {
-            balance: this.game.javaURI + '/rpg_answer/getBalance/' + personId,
+            balance: this.game.javaURI + `/bank/analytics/person/` + personId,
             questionAccuracy: this.game.javaURI + '/rpg_answer/getQuestionAccuracy/' + personId
         };
     
@@ -56,7 +56,7 @@ class StatsManager {
                     document.getElementById(key).innerHTML = `${accuracyPercent}%`;
                     localStorage.setItem(key, `${accuracyPercent}%`);
                 } else {
-                    document.getElementById(key).innerHTML = data ?? 0;
+                    document.getElementById(key).innerHTML = Number(data.data.balance) ?? 0;
                     localStorage.setItem(key, data ?? 0);
                 }
             } catch (err) {
