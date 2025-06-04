@@ -8,8 +8,9 @@ export default class WaypointArrow {
       'Casino-NPC',        // Frank Sinatra
       'Fidelity',          // Fidelity
       'Schwab',            // Schwab
+      'Mining-NPC',        // Mining Man
       'Crypto-NPC',        // Satoshi Nakamoto
-      'Bank-NPC'           // Janet Yellen
+      'Bank-NPC',          // Janet Yellen
     ];
     // Start at the first step (J.P. Morgan)
     this.currentStep = this.loadStep();
@@ -137,18 +138,20 @@ export default class WaypointArrow {
 
     // These offsets (dx, dy) move the arrow just above the NPC's head
     const offsets = {
-      'Stock-NPC':        { dx: 0, dy: -60 },   // J.P. Morgan
-      'Casino-NPC':        { dx: 0, dy: -60 },   // Frank Sinatra
-      'Fidelity':          { dx: 0, dy: 20},   // Lowered from -70 to -40
-      'Schwab':            { dx: 0, dy: 20 },   // Lowered from -70 to -40
-      'Crypto-NPC':        { dx: 0, dy: -60 },   // Satoshi Nakamoto
-      'Bank-NPC':          { dx: 0, dy: -60 },   // Janet Yellen
-      'Market Computer':   { dx: 0, dy: -60 }
+      'Stock-NPC':        { dx: 0, dy: -100 },    // J.P. Morgan - centered
+      'Casino-NPC':       { dx: 0, dy: -80 },     // Frank Sinatra
+      'Fidelity':         { dx: 0, dy: -120 },    // Fidelity - taller sprite
+      'Schwab':           { dx: 0, dy: -120 },    // Schwab - taller sprite
+      'Mining-NPC':       { dx: 0, dy: -80 },     // Mining Man
+      'Crypto-NPC':       { dx: 0, dy: -80 },     // Satoshi Nakamoto
+      'Bank-NPC':         { dx: 0, dy: -80 },     // Janet Yellen
     };
 
     const positions = {
       'Stock-NPC':        { x: width * 0.2, y: height * 0.95 },
       'Casino-NPC':       { x: width * 0.19, y: height * 0.39 },
+      'Fidelity':         { x: width * 0.37, y: height * 0.32 },
+      'Schwab':           { x: width * 0.53, y: height * 0.32 },
       'Mining-NPC':       { x: width * 0.655, y: height * 0.39 },
       'Crypto-NPC':       { x: width * 0.765, y: height * 0.39 },
       'Bank-NPC':         { x: width * 0.745, y: height * 0.88 },
